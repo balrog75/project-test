@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Will you be my Valentine?</title>
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at top, #2b0f3f, #12001a);
+      font-family: "Comic Sans MS", cursive, sans-serif;
+    }
+
+    .halo {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(224,170,255,0.35), transparent 65%);
+      filter: blur(45px);
+      z-index: 0;
+    }
+
+    .card {
+      background: #1a0728;
+      padding: 45px 55px;
+      border-radius: 28px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(160, 64, 255, 0.6);
+      position: relative;
+      z-index: 2;
+      color: #f2e9ff;
+      max-width: 400px;
+    }
+
+    h1 {
+      color: #c77dff;
+      margin-bottom: 25px;
+    }
+
+    .buttons {
+      position: relative;
+      height: 110px;
+    }
+
+    button {
+      font-size: 18px;
+      padding: 12px 32px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    #yes {
+      background: linear-gradient(135deg, #7b2cbf, #9d4edd);
+      color: white;
+      box-shadow: 0 0 20px rgba(199, 125, 255, 0.7);
+      margin-right: 20px;
+    }
+
+    #no {
+      background-color: #3a145e;
+      color: #e0aaff;
+      position: absolute;
+    }
+
+    #muteToggle {
+      margin-top: 15px;
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: #e0aaff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .float {
+      position: absolute;
+      bottom: -20px;
+      font-size: 22px;
+      animation: floatUp 7s linear infinite;
+      opacity: 0.85;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.6); opacity: 0; }
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: fall 3s ease-out forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .moon-text {
+      color: #e0aaff;
+      font-weight: normal;
+      text-shadow: 0 0 12px rgba(224,170,255,0.9);
+      animation: pulse 3s infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { text-shadow: 0 0 10px rgba(224,170,255,0.6); }
+      50% { text-shadow: 0 0 22px rgba(224,170,255,1); }
+    }
+
+    img {
+      max-width: 260px;
+      border-radius: 20px;
+      margin-top: 25px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 42px;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="halo"></div>
+
+  <div class="card">
+    <h1>Sidney, will you be my Valentine? 💜</h1>
+    <div class="buttons">
+      <button id="yes" onclick="yesClicked()">Yes</button>
+      <button id="no">No</button>
+    </div>
+  </div>
+
+  <!-- Hidden autoplay audio -->
+  <audio id="valentineSong" preload="auto" loop>
+    <source src="https://www.dropbox.com/scl/fi/a0r431al5fe959qxi8bzk/Origami-Button-Peach.mp3?rlkey=piyn709hrrjfmzidkb31xqt70&dl=1" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const noBtn = document.getElementById("no");
+    const yesBtn = document.getElementById("yes");
+    const song = document.getElementById("valentineSong");
+    const container = document.querySelector(".buttons");
+    let yesScale = 1;
+    let noScale = 1;
+    let isMuted = false;
+    let vol = 0;
+
+    // Make "No" button dodge
+    noBtn.addEventListener("mouseover", () => {
+      const r = container.getBoundingClientRect();
+      noBtn.style.left = Math.random() * (r.width - 60) + "px";
+      noBtn.style.top = Math.random() * (r.height - 40) + "px";
+
+      yesScale += 0.22;
+      yesBtn.style.transform = `scale(${yesScale})`;
+
+      noScale -= 0.12;
+      if (noScale < 0.35) noScale = 0.35;
+
+      noBtn.style.transform = `
+        scale(${noScale})
+        translate(${(Math.random()-0.5)*12}px, ${(Math.random()-0.5)*12}px)
+      `;
+    });
+
+    // Confetti
+    function confettiBurst() {
+      const colors = ["#c77dff", "#9d4edd", "#e0aaff", "#ffffff"];
+      for (let i = 0; i < 150; i++) {
+        const c = document.createElement("div");
+        c.className = "confetti";
+        c.style.left = Math.random() * 100 + "vw";
+        c.style.top = "-10px";
+        c.style.background = colors[Math.floor(Math.random()*colors.length)];
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 3000);
+      }
+    }
+
+    function yesClicked() {
+      // Start music with soft fade-in
+      song.volume = 0;
+      song.play();
+      vol = 0;
+      const maxVol = 0.3;
+      const step = 0.02;
+      const interval = 6000 / (maxVol / step);
+      const fade = setInterval(() => {
+        if (!isMuted) {
+          vol += step;
+          if (vol > maxVol) vol = maxVol;
+          song.volume = vol;
+        }
+        if (vol >= maxVol) clearInterval(fade);
+      }, interval);
+
+      confettiBurst();
+
+      setTimeout(() => {
+        const card = document.querySelector(".card");
+        card.innerHTML = `
+          <h1>My perfect girl whom I love so much, thank you for being my honeybee💜🌙</h1>
+          <h2 class="moon-text">I look forward to every valentines day with you ✨</h2>
+          <img
+            src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMHJrOG04dzU1c3p2NXBjeW13Z3FubTEydzNoczM4aGp1dnowZTF4aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/MDJ9IbxxvDUQM/giphy.gif"
+          />
+          <div style="text-align:center; margin-top:20px;">
+            <iframe 
+              src="https://bandcamp.com/EmbeddedPlayer/track=1474596088/size=small/bgcol=ffffff/linkcol=7137dc/artwork=none/transparent=true/" 
+              seamless>
+            </iframe>
+            <br/>
+            <button id="muteToggle">🔇 Mute</button>
+          </div>
+        `;
+
+        document.getElementById("muteToggle").addEventListener("click", () => {
+          isMuted = !isMuted;
+          song.volume = isMuted ? 0 : vol;
+          document.getElementById("muteToggle").innerText = isMuted ? "🔊 Unmute" : "🔇 Mute";
+        });
+
+      }, 800);
+    }
+
+    // Floating moons & stars
+    function floatThing() {
+      const el = document.createElement("div");
+      el.className = "float";
+      el.innerText = Math.random() > 0.5 ? "🌙" : "✨";
+      el.style.left = Math.random() * 100 + "vw";
+      el.style.animationDuration = (5 + Math.random() * 3) + "s";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 8000);
+    }
+    setInterval(floatThing, 400);
+
+  </script>
+</body>
+</html>
